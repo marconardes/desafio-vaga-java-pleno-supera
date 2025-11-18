@@ -413,7 +413,7 @@ proxy_set_header X-Real-IP $remote_addr;
 
 ## 9. Roadmap de Implementação (pra você se organizar nos 8 dias)
 
-1. **Dia 1–2**
+1. **Dia 1**
 
    * Criar projeto Spring Boot (Java 21, dependências)
    * Configurar Postgres local e Docker Compose básico
@@ -421,38 +421,34 @@ proxy_set_header X-Real-IP $remote_addr;
    * Configurar Flyway/Liquibase (se for usar)
    * Popular dados iniciais (usuários + módulos)
 
-2. **Dia 3–4**
+2. **Dia 2**
 
    * Implementar autenticação JWT + login
    * Criar endpoints de módulos (`GET /modules`)
    * Implementar criação de solicitação + regras de negócio
 
-3. **Dia 5**
-
-   * Consultas / filtros / paginação
-   * Detalhes / renovação / cancelamento
-
-4. **Dia 6**
-
-   * Testes unitários (services / regras)
-   * Testes de integração (MockMvc)
-
-5. **Dia 7**
+3. **Dia 3**
 
    * Ajustar cobertura JaCoCo
    * Finalizar Dockerfile multi-stage + compose com 3 apps + Nginx
    * Validar `docker-compose up` do zero
 
-6. **Dia 8**
+
+4. **Dia 4**
+
+   * Consultas / filtros / paginação
+   * Detalhes / renovação / cancelamento
+
+4. **Dia 5**
+
+   * Testes unitários (services / regras)
+   * Testes de integração (MockMvc)
+
+
+6. **Dia 6**
 
    * Polir README
    * Gerar relatório JaCoCo
    * Revisar tudo como se fosse um avaliador (clonar em pasta nova e rodar do zero).
 
 ---
-
-Se quiser, no próximo passo eu posso:
-
-* Desenhar os **DTOs** (request/response) de cada endpoint,
-* Sugerir o **package layout** (`controller`, `service`, `repository`, `domain`, `config`, etc.),
-* Ou já montar um rascunho de **pom.xml** com JaCoCo + plugins configurados.

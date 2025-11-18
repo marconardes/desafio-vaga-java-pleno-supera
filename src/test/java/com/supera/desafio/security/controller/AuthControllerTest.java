@@ -1,5 +1,6 @@
 package com.supera.desafio.security.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,6 +45,12 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void swaggerUiShouldBePublic() throws Exception {
+        mockMvc.perform(get("/swagger-ui/index.html"))
+                .andExpect(status().isOk());
     }
 
     private record LoginPayload(String email, String password) {

@@ -25,25 +25,24 @@ FROM modules m
 JOIN (
     SELECT 'PORTAL' AS code, department FROM (VALUES ('TI'), ('FINANCEIRO'), ('RH'), ('OPERACOES'), ('OUTROS')) AS t(department)
     UNION ALL
-    SELECT 'RELATORIOS', department FROM (VALUES ('TI'), ('FINANCEIRO'), ('RH'), ('OPERACOES'), ('OUTROS')) AS t2(department)
+    SELECT 'RELATORIOS' AS code, department FROM (VALUES ('TI'), ('FINANCEIRO'), ('RH'), ('OPERACOES'), ('OUTROS')) AS t2(department)
     UNION ALL
-    SELECT 'GESTAO_FINANCEIRA', department FROM (VALUES ('TI'), ('FINANCEIRO')) AS t3(department)
+    SELECT 'GESTAO_FINANCEIRA' AS code, department FROM (VALUES ('TI'), ('FINANCEIRO')) AS t3(department)
     UNION ALL
-    SELECT 'APROVADOR_FIN', department FROM (VALUES ('TI'), ('FINANCEIRO')) AS t4(department)
+    SELECT 'APROVADOR_FIN' AS code, department FROM (VALUES ('TI'), ('FINANCEIRO')) AS t4(department)
     UNION ALL
-    SELECT 'SOLICITANTE_FIN', department FROM (VALUES ('TI'), ('FINANCEIRO')) AS t5(department)
+    SELECT 'SOLICITANTE_FIN' AS code, department FROM (VALUES ('TI'), ('FINANCEIRO')) AS t5(department)
     UNION ALL
-    SELECT 'ADMIN_RH', department FROM (VALUES ('TI'), ('RH')) AS t6(department)
+    SELECT 'ADMIN_RH' AS code, department FROM (VALUES ('TI'), ('RH')) AS t6(department)
     UNION ALL
-    SELECT 'COLAB_RH', department FROM (VALUES ('TI'), ('RH')) AS t7(department)
+    SELECT 'COLAB_RH' AS code, department FROM (VALUES ('TI'), ('RH')) AS t7(department)
     UNION ALL
-    SELECT 'ESTOQUE', department FROM (VALUES ('TI'), ('OPERACOES')) AS t8(department)
+    SELECT 'ESTOQUE' AS code, department FROM (VALUES ('TI'), ('OPERACOES')) AS t8(department)
     UNION ALL
-    SELECT 'COMPRAS', department FROM (VALUES ('TI'), ('OPERACOES')) AS t9(department)
+    SELECT 'COMPRAS' AS code, department FROM (VALUES ('TI'), ('OPERACOES')) AS t9(department)
     UNION ALL
-    SELECT 'AUDITORIA', department FROM (VALUES ('TI')) AS t10(department)
-) AS d
-WHERE m.code = d.code;
+    SELECT 'AUDITORIA' AS code, department FROM (VALUES ('TI')) AS t10(department)
+) AS d ON m.code = d.code;
 
 -- Incompatibilidades
 INSERT INTO module_incompatibilities (module_id, incompatible_module_id)

@@ -34,7 +34,6 @@
 
    * Polir README
    * Gerar relatório JaCoCo
-   * Revisar tudo como se fosse um avaliador (clonar em pasta nova e rodar do zero).
 
 ---
 
@@ -43,3 +42,4 @@
 - Dia 2 concluído (autenticação e segurança básica entregue).
 - Dia 3 concluído (Dockerfile + docker-compose + Nginx balanceando).
 - Dia 4 concluído (consultas, filtros, cancelamento e renovação disponibilizados).
+- Dia 5 concluído (testes unitários e de integração expandidos, cobertura verificada).

@@ -21,6 +21,12 @@ Projeto inicial para o fluxo de Solicitações de Acesso a Módulos. Consulte `R
 
 Você pode sobrescrever essas variáveis via `.env` ou exportando-as antes do `docker compose up`.
 
+## Testes
+Execute toda a suíte (unitário + integração) com:
+```bash
+mvn clean test
+```
+
 ## Endpoints disponíveis (parciais)
 - `POST /auth/login` – autenticação via e-mail/senha.
 - `GET /api/modules` – lista módulos disponíveis.

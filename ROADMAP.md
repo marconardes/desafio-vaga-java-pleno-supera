@@ -42,3 +42,4 @@
 - Dia 1 concluído (fundamentos criados e seeds configurados).
 - Dia 2 concluído (autenticação e segurança básica entregue).
 - Dia 3 concluído (Dockerfile + docker-compose + Nginx balanceando).
+- Dia 4 concluído (consultas, filtros, cancelamento e renovação disponibilizados).

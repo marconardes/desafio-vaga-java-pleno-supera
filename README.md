@@ -20,3 +20,12 @@ Projeto inicial para o fluxo de Solicitações de Acesso a Módulos. Consulte `R
 - `JWT_SECRET=change-me-secret`
 
 Você pode sobrescrever essas variáveis via `.env` ou exportando-as antes do `docker compose up`.
+
+## Endpoints disponíveis (parciais)
+- `POST /auth/login` – autenticação via e-mail/senha.
+- `GET /api/modules` – lista módulos disponíveis.
+- `POST /api/access-requests` – cria solicitação de acesso com validações.
+- `GET /api/access-requests` – consulta com filtros, paginação e ordenação.
+- `GET /api/access-requests/{id}` – detalhes e histórico.
+- `POST /api/access-requests/{id}/cancel` – cancela solicitações ativas.
+- `POST /api/access-requests/{id}/renew` – renova solicitações faltando até 30 dias.

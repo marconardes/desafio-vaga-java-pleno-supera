@@ -4,6 +4,7 @@ import com.supera.desafio.core.domain.history.AccessRequestHistory;
 import com.supera.desafio.core.domain.module.SystemModule;
 import com.supera.desafio.core.domain.user.DepartmentType;
 import com.supera.desafio.core.domain.user.SystemUser;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -73,6 +74,6 @@ public class AccessRequest {
             inverseJoinColumns = @JoinColumn(name = "module_id"))
     private Set<SystemModule> modules = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "request")
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AccessRequestHistory> historyEntries = new LinkedHashSet<>();
 }

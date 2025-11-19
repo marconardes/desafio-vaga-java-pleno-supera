@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.supera.desafio.core.domain.module.SystemModule;
 import com.supera.desafio.core.repository.SystemModuleRepository;
+import com.supera.desafio.core.repository.AccessRequestRepository;
+import com.supera.desafio.core.repository.ModuleAccessRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,12 +35,18 @@ class AccessRequestControllerTest {
 
     @Autowired
     private SystemModuleRepository moduleRepository;
+    @Autowired
+    private AccessRequestRepository accessRequestRepository;
+    @Autowired
+    private ModuleAccessRepository moduleAccessRepository;
 
     private String bearerToken;
 
     @BeforeEach
     void setup() throws Exception {
         bearerToken = authenticate();
+        moduleAccessRepository.deleteAll();
+        accessRequestRepository.deleteAll();
     }
 
     @Test
@@ -96,5 +104,27 @@ class AccessRequestControllerTest {
     }
 
     private record CancelPayload(String reason) {
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenRenewingTooEarly() throws Exception {
+        Long moduleId = moduleRepository.findByCode("PORTAL")
+                .map(SystemModule::getId)
+                .orElseThrow();
+        String payload = objectMapper.writeValueAsString(new CreatePayload(List.of(moduleId), "Solicito acesso para renovação.", false));
+
+        MvcResult createResult = mockMvc.perform(post("/api/access-requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", bearerToken)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        JsonNode created = objectMapper.readTree(createResult.getResponse().getContentAsString());
+        long requestId = created.get("id").asLong();
+
+        mockMvc.perform(post("/api/access-requests/" + requestId + "/renew")
+                        .header("Authorization", bearerToken))
+                .andExpect(status().isBadRequest());
     }
 }

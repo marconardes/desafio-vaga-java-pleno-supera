@@ -5,8 +5,11 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
@@ -19,6 +22,11 @@ public class OpenApiConfig {
                         .title("Solicitações de Acesso API")
                         .description("Documentação da API do desafio Supera")
                         .version("0.1.0"))
+                .servers(List.of(
+                        new Server()
+                                .url("http://localhost:8080")
+                                .description("Ambiente local exposto via docker-compose")
+                ))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components().addSecuritySchemes(securitySchemeName,
                         new SecurityScheme()

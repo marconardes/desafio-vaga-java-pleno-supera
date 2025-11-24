@@ -1,37 +1,134 @@
 # Desafio Java Pleno Supera
 
-Projeto inicial para o fluxo de Solicitações de Acesso a Módulos. Consulte `ROADMAP.md` para o plano completo de execução.
+API e infraestrutura de suporte para o fluxo de Solicitações de Acesso a Módulos. Toda a documentação técnica e o plano detalhado de execução estão em `ROADMAP.md`, enquanto `DATA.md` descreve hipóteses de regras e o racional de negócio.
 
-## Execução com Docker Compose
-1. Gere o artefato localmente (opcional, pois o Dockerfile executa o build):
-   ```bash
-   mvn clean package
-   ```
-2. Suba toda a stack (Postgres + 3 instâncias da API + Nginx) com:
-   ```bash
-   docker compose up --build
-   ```
-3. Acesse `http://localhost` para chegar na API via Nginx (Swagger ficará exposto em `/swagger-ui.html` quando configurado).
+## Visão Geral
+- Catálogo de módulos corporativos, solicitações com limite e compatibilidade entre perfis, cancelamento e renovação em fila única.
+- Autenticação JWT com expiração curta e validação stateless.
+- Stack containerizada com Postgres 17, três instâncias da API e Nginx balanceando as requisições.
+- Migrações Flyway e seeds garantem setup consistente para reviewers.
 
-### Variáveis padrão
-- `DB_NAME=desafio`
-- `DB_USER=supera`
-- `DB_PASSWORD=supera`
-- `JWT_SECRET=change-me-secret`
+## Tecnologias
+- Java 21, Spring Boot 3.2, Spring Web, Spring Data JPA, Spring Validation.
+- Spring Security + JWT (jjwt), Bean Validation e GlobalExceptionHandler.
+- PostgreSQL 17 (prod/dev) e H2 para testes.
+- Flyway, Docker/Docker Compose, Nginx como reverse proxy.
+- JUnit 5, Mockito, Spring Security Test, MockMvc, Instancio, JaCoCo (mínimo 90% instruction coverage).
+- Vue 3, Pinia e Vite para a SPA corporativa hospedada em `frontend/`.
 
-Você pode sobrescrever essas variáveis via `.env` ou exportando-as antes do `docker compose up`.
-
-## Testes
-Execute toda a suíte (unitário + integração) com:
-```bash
-mvn clean test
+## Arquitetura
 ```
+┌────────┐     ┌────────┐     ┌───────────────┐
+│ Client │ ──▶ │ Nginx  │ ──▶ │ app1/app2/app3│
+└────────┘     └────────┘     └───────────────┘
+                                 │
+                                 ▼
+                            PostgreSQL 17
+```
+- O `docker-compose.yml` sobe `db`, três containers idênticos da API (build multi-stage) e um Nginx (`nginx/default.conf`) que faz round-robin apontando para as portas 8080 internas.
+- O serviço `frontend` (Nginx estático) expõe o bundle Vue em `http://localhost:3000`, consumindo a API via Nginx principal.
+- `SPRING_PROFILES_ACTIVE=prod` habilita configuração otimizada para containers e leitura de variáveis externas.
+- `application.yml` centraliza os defaults e expõe `actuator/health` para os healthchecks do Dockerfile e do Compose.
 
-## Endpoints disponíveis (parciais)
-- `POST /auth/login` – autenticação via e-mail/senha.
-- `GET /api/modules` – lista módulos disponíveis.
-- `POST /api/access-requests` – cria solicitação de acesso com validações.
-- `GET /api/access-requests` – consulta com filtros, paginação e ordenação.
-- `GET /api/access-requests/{id}` – detalhes e histórico.
-- `POST /api/access-requests/{id}/cancel` – cancela solicitações ativas.
-- `POST /api/access-requests/{id}/renew` – renova solicitações faltando até 30 dias.
+## Frontend
+- A pasta `frontend/` contém o build da SPA (Vue 3 + Vite) utilizada nas demonstrações.
+- O bundle final já está em `frontend/dist` (com `node_modules` incluso para referência).
+- No Docker Compose, o serviço `frontend` (nginx estático) já serve o bundle em `http://localhost:3000`.
+- Alternativa local rápida: `npx serve frontend/dist` (ou qualquer servidor estático) e acessar `http://localhost:3000`.
+- É possível integrar o build ao Nginx do Compose adicionando um novo `server` ou servindo arquivos estáticos no mesmo host.
+
+## Pré-requisitos
+- Docker 24+ e Docker Compose plugin.
+- Make sure porta `8080` está livre (exposta pelo Nginx).
+- Para rodar localmente sem Docker: Java 21+, Maven 3.9+, Postgres 17 (ou Compose apenas para o banco).
+
+## Como executar
+
+### Ambiente completo (Docker Compose)
+```bash
+# (Opcional) preparar dependências em cache
+mvn clean package
+
+# Build da imagem e subida dos serviços
+docker compose up --build
+```
+- Espere o healthcheck do Postgres completar; Nginx só entra após as três APIs estarem saudáveis.
+- Acesse `http://localhost:8080` (API) ou `http://localhost:8080/swagger-ui/index.html` para a documentação interativa.
+- Para resetar o ambiente: `docker compose down -v`.
+
+### Execução local sem containers
+1. Suba apenas o Postgres (local ou via `docker compose up db -d`).
+2. Exporte as variáveis esperadas ou ajuste `application.yml`:
+   ```bash
+   export DB_HOST=localhost
+   export DB_PORT=5432
+   export DB_NAME=desafio
+   export DB_USER=supera
+   export DB_PASSWORD=supera
+   export JWT_SECRET=local-dev-secret
+   ```
+3. Rode a aplicação:
+   ```bash
+   mvn spring-boot:run
+   ```
+4. Por padrão a API responde em `http://localhost:8080`.
+
+## Variáveis de ambiente principais
+| Variável | Descrição | Default |
+| --- | --- | --- |
+| `DB_HOST` / `DB_PORT` | Host/porta do Postgres | `db` / `5432` |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Credenciais do schema | `desafio`, `supera`, `supera` |
+| `JWT_SECRET` | Segredo para assinatura dos tokens | `this-is-a-dev-secret-change-me` (compose usa `change-me-secret`) |
+| `SPRING_PROFILES_ACTIVE` | Perfil Spring | `prod` nos containers / `default` local |
+| `SERVER_PORT` | Porta da API | `8080` |
+| `TZ`, `JAVA_OPTS` | Ajustes opcionais do container | definidos no `Dockerfile` |
+
+Use um arquivo `.env` na raiz para sobrescrever valores durante o `docker compose up`.
+
+## Usuários seed (todos com `Senha123`)
+| Nome | E-mail | Departamento |
+| --- | --- | --- |
+| Carla Tech | `carla.ti@corp.com` | TI |
+| Paulo Financeiro | `paulo.financeiro@corp.com` | FINANCEIRO |
+| Renata RH | `renata.rh@corp.com` | RH |
+| Otavio Operações | `otavio.operacoes@corp.com` | OPERAÇÕES |
+
+As senhas já estão criptografadas nas migrations (`src/main/resources/db/migration/V2__seed_data.sql`). Utilize esses usuários para autenticar no Swagger ou via frontend (`frontend/dist` contém um build Vue pronto para servir manualmente, fora do escopo do Compose).
+
+## Testes, qualidade e cobertura
+```bash
+# Unitários + integração
+mvn clean test
+
+# Inclui relatório JaCoCo (falha se < 90% instruction coverage)
+mvn clean verify
+```
+- O relatório HTML fica em `target/site/jacoco/index.html`.
+- Os testes cobrem services, filtros JWT, controllers (MockMvc) e cenários de regra de negócio (limites, incompatibilidades, departamentos, etc.).
+
+## Endpoints principais
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| `POST` | `/auth/login` | Autentica usuário corporativo e retorna tokens + snapshot do perfil. |
+| `GET` | `/api/modules` | Lista módulos disponíveis, descrição, status e restrições de departamento. |
+| `POST` | `/api/access-requests` | Cria solicitação (1–3 módulos). Aplica regras de incompatibilidade, limites e justificativa. |
+| `GET` | `/api/access-requests` | Consulta paginada com filtros (`q`, `status`, `urgent`, data). Retorna apenas dados do solicitante logado. |
+| `GET` | `/api/access-requests/{id}` | Detalhes completos (histórico e módulos). |
+| `POST` | `/api/access-requests/{id}/cancel` | Cancela solicitações ativas com registro de histórico e revogação dos acessos. |
+| `POST` | `/api/access-requests/{id}/renew` | Renova solicitações que expiram em até 30 dias, reaplicando todas as validações. |
+| `GET` | `/actuator/health` | Utilizado por Docker/Nginx para healthcheck. |
+
+Cada endpoint está documentado pelo SpringDoc e exige token JWT (exceto `/auth/**`).
+
+## Estrutura de pastas
+- `src/main/java/com/supera/desafio` – Camadas de domínio (`access`, `module`, `security`, `shared`).
+- `src/main/resources/db/migration` – Migrações Flyway.
+- `nginx/` – Configuração de proxy balanceado.
+- `frontend/` – Build da SPA (Vue 3 + Pinia + Vite) usada nos vídeos/demo.
+
+## Próximos passos sugeridos
+- Deploy estático do `frontend/dist` no mesmo Nginx (config adicional).
+- Adicionar refresh token endpoint e rotação automática.
+- Automatizar validações com GitHub Actions (`mvn verify` + `docker compose config`).
+
+Qualquer novidade ou ajuste adicional, registre no `ROADMAP.md`.

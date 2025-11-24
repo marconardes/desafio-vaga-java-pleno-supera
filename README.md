@@ -26,16 +26,11 @@ API e infraestrutura de suporte para o fluxo de Solicitações de Acesso a Módu
                             PostgreSQL 17
 ```
 - O `docker-compose.yml` sobe `db`, três containers idênticos da API (build multi-stage) e um Nginx (`nginx/default.conf`) que faz round-robin apontando para as portas 8080 internas.
-- O serviço `frontend` (Nginx estático) expõe o bundle Vue em `http://localhost:3000`, consumindo a API via Nginx principal.
 - `SPRING_PROFILES_ACTIVE=prod` habilita configuração otimizada para containers e leitura de variáveis externas.
 - `application.yml` centraliza os defaults e expõe `actuator/health` para os healthchecks do Dockerfile e do Compose.
 
 ## Frontend
-- A pasta `frontend/` contém o build da SPA (Vue 3 + Vite) utilizada nas demonstrações.
-- O bundle final já está em `frontend/dist` (com `node_modules` incluso para referência).
-- No Docker Compose, o serviço `frontend` (nginx estático) já serve o bundle em `http://localhost:3000`.
-- Alternativa local rápida: `npx serve frontend/dist` (ou qualquer servidor estático) e acessar `http://localhost:3000`.
-- É possível integrar o build ao Nginx do Compose adicionando um novo `server` ou servindo arquivos estáticos no mesmo host.
+- Nesta versão a entrega contempla apenas a API. O diretório `frontend/` permanece com o código Vue 3 para referência, porém não é executado automaticamente pelo docker-compose.
 
 ## Pré-requisitos
 - Docker 24+ e Docker Compose plugin.
@@ -132,3 +127,10 @@ Cada endpoint está documentado pelo SpringDoc e exige token JWT (exceto `/auth/
 - Automatizar validações com GitHub Actions (`mvn verify` + `docker compose config`).
 
 Qualquer novidade ou ajuste adicional, registre no `ROADMAP.md`.
+
+## Tutorial rápido (CLI)
+1. Clone este repositório e acesse a pasta.
+2. Execute `mvn clean package` para validar dependências e buildar a API.
+3. Suba a stack: `docker compose up --build` (Postgres + API + Nginx).
+4. Faça login via Swagger (`http://localhost:8080/swagger-ui/index.html`) utilizando um dos usuários seed.
+5. Opcional: rodar o frontend localmente (fora do Compose) com `cd frontend && npm install && npm run dev -- --host`.
